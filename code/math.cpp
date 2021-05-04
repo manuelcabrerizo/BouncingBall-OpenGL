@@ -274,3 +274,9 @@ Vec3 Lerp(Vec3 a, Vec3 b, float t)
     Vec3 result = a + (v * t);
     return result;
 }
+
+Vec3 Lerp2(Vec3 a, Vec3 v, float t)
+{
+    Vec3 result = a + (v * t);
+    return result;
+}

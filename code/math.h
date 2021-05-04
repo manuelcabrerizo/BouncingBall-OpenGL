@@ -40,5 +40,6 @@ Vec3 vec3_cross(Vec3 a, Vec3 b);
 float vec3_length(Vec3 v);
 Vec3 normaliza_vec3(Vec3 v);
 Vec3 Lerp(Vec3 a, Vec3 b, float t);
+Vec3 Lerp2(Vec3 a, Vec3 v, float t);
     
 #endif
