@@ -3,10 +3,9 @@
 #include <GL/wglext.h>
 #include <stdio.h>
 
-
 // my stuff...
 #include "math.h"
-
+#include "shader.h"
 
 #define global_variable static
 #define WNDWIDTH 800
