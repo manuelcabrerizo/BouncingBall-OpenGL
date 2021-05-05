@@ -5,7 +5,7 @@
 
 #include "shader.h"
 
-char* ReadFile(char* file_path)
+char* ReadFile(const char* file_path)
 {
     FILE* file;
     char* buffer;
@@ -22,13 +22,8 @@ char* ReadFile(char* file_path)
     long int file_size = ftell(file);
     // go back to the start of the file
     fseek(file, 0, SEEK_SET);
-    // alloc the memory 
-    buffer = (char*)VirtualAlloc(
-            0,
-            (file_size + 1) * sizeof(char),
-            MEM_COMMIT,
-            PAGE_READWRITE);
-
+    // alloc the memory     
+    buffer = (char*)malloc(file_size + 1);
     if(buffer == NULL)
     {
         OutputDebugString("ERROR::ALLOCATING::MEMORY::FOR::BUFFER\n");
@@ -45,8 +40,8 @@ char* ReadFile(char* file_path)
 
 void LoadShader(
         Shader* shader,
-        char* vertex_path,
-        char* fragment_path)
+        const char* vertex_path,
+        const char* fragment_path)
 {
     // buffers to store the content of our shaders...
     char* vertex_buffer = ReadFile(vertex_path);

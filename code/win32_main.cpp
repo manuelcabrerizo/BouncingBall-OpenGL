@@ -6,6 +6,7 @@
 // my stuff...
 #include "math.h"
 #include "shader.h"
+#include "game.h"
 
 #define global_variable static
 #define WNDWIDTH 800
@@ -170,20 +171,9 @@ int WinMain(
     ShowWindow(hWnd, SW_SHOW);
     CoInitialize(nullptr);
 
-    static float timer = 0.0f;
-    Vec3 start = {-5.0f, 0.0f, 0.0f};
-    Vec3 end   = {5.0f, 0.0f, 0.0f};
-    Vec3 result;
+    MainGame game;
+    GameInit(&game);
     
-    while(timer <= 1.0f)
-    {
-        result = Lerp(start, end, timer);
-        char buffer[100];
-        sprintf(buffer, "x: %f, y: %f, z: %f\n", result.x, result.y, result.z);
-        OutputDebugString(buffer);
-        timer += 0.01;
-    }
-
     while(is_runnig == true)
     {
         MSG message;
@@ -195,10 +185,11 @@ int WinMain(
         else
         {
             // TODO: Update and Render the Game...
-            glClearColor(0.4f, 0.0f, 0.0f, 1.0f);
+            glClearColor(0.2f, 0.0f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // render game...
+            GameUnpdateAndRender(&game, 1.0f);
 
             SwapBuffers(handle_device_context);
 
