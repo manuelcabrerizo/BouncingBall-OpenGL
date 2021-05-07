@@ -53,8 +53,7 @@ void GameInit(MainGame* game)
         -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.5f,
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.5f
     };
-    game->input.mouseDefaultPosX = WNDWIDTH  / 2;
-    game->input.mouseDefaultPosY = WNDHEIGHT / 2;
+
     InitializeCamera(&game->camera);
     
     LoadShader(&game->main_shader,

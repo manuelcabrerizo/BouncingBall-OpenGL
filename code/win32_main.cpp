@@ -185,6 +185,8 @@ int WinMain(
 
     // TODO: Initialize the Game...
     MainGame game = {};
+    game.input.mouseDefaultPosX = WNDWIDTH  / 2;
+    game.input.mouseDefaultPosY = WNDHEIGHT / 2;
     GameInit(&game);
     InitializeGamePads(&game.input);
     ShowWindow(hWnd, SW_SHOW);
