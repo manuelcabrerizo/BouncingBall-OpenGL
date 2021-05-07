@@ -6,8 +6,6 @@ struct Shader
     unsigned int id;
 };
 
-char* ReadFile(const char* file_path);
-
 void LoadShader(Shader* shader,
         const char* vertex_filepath,
         const char* fragment_path);

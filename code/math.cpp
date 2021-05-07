@@ -6,6 +6,24 @@ float to_radiant(float v)
     return v * PI / 180.0f;
 }
 
+float absf(float f)
+{
+    if(f < 0)
+    {
+        f = -f;
+    }
+    return f;
+}
+
+Vec3 vec3_rotate_y(Vec3 v, float angle)
+{
+    Vec3 rotatedVector;
+        rotatedVector.x = v.x * cosf(angle) + v.z * sinf(angle);
+        rotatedVector.y = v.y;
+        rotatedVector.z = -v.x * sinf(angle) + v.z * cosf(angle); 
+    return rotatedVector;
+}
+
 Vec3 operator+(const Vec3& a, const Vec3& b)
 {
     Vec3 result;

@@ -7,7 +7,7 @@ IF NOT EXIST build mkdir build
 
 pushd build
 cl /EHsc /Zi ..\code\*.cpp ..\code\glad.c /Fe:game %LIBS% ^
-/I"D:\Dev\tm_engine3d\include" 
+/I"D:\Dev\BouncingBalls3DOpenGL\include" 
 popd
 
 

@@ -3,40 +3,8 @@
 #include <stdio.h>
 #include <glad/glad.h>
 
+#include "utility.h"
 #include "shader.h"
-
-char* ReadFile(const char* file_path)
-{
-    FILE* file;
-    char* buffer;
-    file = fopen(file_path, "rb");
-    if(file == NULL)
-    {
-        OutputDebugString("ERROR::LOADING::SHADER::FILE\n");
-        return NULL;
-    }
-
-    // go to the end of the file 
-    fseek(file, 0, SEEK_END);
-    // get the size of the file, to alloc the memory we need
-    long int file_size = ftell(file);
-    // go back to the start of the file
-    fseek(file, 0, SEEK_SET);
-    // alloc the memory     
-    buffer = (char*)malloc(file_size + 1);
-    if(buffer == NULL)
-    {
-        OutputDebugString("ERROR::ALLOCATING::MEMORY::FOR::BUFFER\n");
-        return NULL;
-    }
-    // store the content of the file in the buffer of chars
-    fread((void*)buffer, file_size, 1, file);
-    buffer[file_size] = 0; // null terminating string...
-    fclose(file); // free FILE*...
-
-    return buffer;
-
-}
 
 void LoadShader(
         Shader* shader,

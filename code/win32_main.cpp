@@ -1,18 +1,17 @@
 #include <windows.h>
+#include <Windowsx.h>
 #include <glad/glad.h>
 #include <GL/wglext.h>
 #include <stdio.h>
 
 // my stuff...
-#include "math.h"
-#include "shader.h"
 #include "game.h"
 
-#define global_variable static
-#define WNDWIDTH 800
-#define WNDHEIGHT 600
 
 global_variable bool is_runnig;
+global_variable bool should_update_mouse_pos;
+global_variable int xOffset;
+global_variable int yOffset;
 
 LRESULT CALLBACK WindowProc(
         HWND   hwnd,
@@ -30,6 +29,15 @@ LRESULT CALLBACK WindowProc(
         case WM_DESTROY:
         {
             is_runnig = false; 
+        }break;
+        case WM_MOVE:
+        {
+        // TODO(Manuto): handle the case the we move the window
+        // we should recalculate de mouse default position...
+            OutputDebugString("WINDOW::MOVE::!!!!!\n");
+            xOffset = (int)(short)LOWORD(lParam);   // horizontal position 
+            yOffset = (int)(short)HIWORD(lParam);   // vertical position
+            should_update_mouse_pos = true; 
         }break;
         default:
         {
@@ -109,8 +117,8 @@ bool InitOpengGLContext(HWND* hWnd, HDC* handle_device_context)
     }
     
     // set up initial configuration for open GL...
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_FRONT);
     glViewport(0, 0, WNDWIDTH, WNDHEIGHT);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_DEPTH_TEST); 
@@ -140,14 +148,23 @@ int WinMain(
         return 1;
     }
     
+   // We create a RECT and use to give the windows the correct client size 800x600 
+    RECT windowRect;
+    windowRect.left   = 0;
+    windowRect.right  = WNDWIDTH;
+    windowRect.bottom = WNDHEIGHT;
+    windowRect.top    = 0;
+    AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE); 
+
     // funtion that create the window whit the wndClass and a position and a dimention
     HWND hWnd = CreateWindow(
                     "BouncingBalls3D",
                     "BouncingBalls3D",
                     WS_OVERLAPPEDWINDOW,
-                    0, 0,
-                    WNDWIDTH,
-                    WNDHEIGHT,
+                    0,
+                    0,
+                    windowRect.right  - windowRect.left,
+                    windowRect.bottom - windowRect.top,
                     NULL,
                     NULL,
                     hInstance,
@@ -167,32 +184,122 @@ int WinMain(
     }
 
     // TODO: Initialize the Game...
-    is_runnig = true;
+    MainGame game = {};
+    GameInit(&game);
+    InitializeGamePads(&game.input);
     ShowWindow(hWnd, SW_SHOW);
     CoInitialize(nullptr);
+    is_runnig = true;
 
-    MainGame game;
-    GameInit(&game);
+    // QueryPerformanceFrequency we need to get this value to the use it with the QueryPerformanceCounter...
+    LARGE_INTEGER queryPerformancefrequency;
+    QueryPerformanceFrequency(&queryPerformancefrequency);
+    uint64_t frequency = queryPerformancefrequency.QuadPart;
+    
+    LARGE_INTEGER oldCounter;
+    QueryPerformanceCounter(&oldCounter);
+
     
     while(is_runnig == true)
-    {
+    { 
+        
         MSG message;
         if(PeekMessage(&message, hWnd, 0, 0, PM_REMOVE))
         {
-            TranslateMessage(&message);
-            DispatchMessage(&message); 
+            switch(message.message)
+            {
+                // here we handle keyboard INPUT...
+                case WM_KEYDOWN:
+                {
+                    uint32_t keyCode = (uint32_t)message.wParam;
+                    SetKeyDown(&game.input, keyCode);
+                }break;
+                case WM_KEYUP:
+                {
+                    uint32_t keyCode = (uint32_t)message.wParam;
+                    SetKeyUp(&game.input, keyCode);
+                }break;
+                case WM_MOUSEMOVE:
+                {
+                    POINT cursorPos;
+                    GetCursorPos(&cursorPos);
+                    game.input.mousePosX = cursorPos.x;
+                    game.input.mousePosY = cursorPos.y; 
+
+                    if(GetMouseButtonPress(&game.input, RIGHTBUTTON))
+                    { 
+                        game.input.mouseIncX += cursorPos.x - (float)game.input.mouseDefaultPosX;
+                        game.input.mouseIncY += cursorPos.y - (float)game.input.mouseDefaultPosY;
+                        SetCursorPos(game.input.mouseDefaultPosX, game.input.mouseDefaultPosY);
+                    }
+                    else
+                    { 
+                        game.input.mouseIncX = 0.0f;
+                        game.input.mouseIncY = 0.0f; 
+                    }
+
+                }break;
+                
+                // LEFT::MOUSE::BUTTON::HANDLER...
+                case WM_LBUTTONDOWN:
+                {
+                    SetMouseButtonPress(&game.input, 0);
+
+                }break;
+                case WM_LBUTTONUP:
+                {
+                    SetMouseButtonUp(&game.input, 0);                  
+                }break;
+                // RIGHT::MOUSE::BUTTON::HANDLER...
+                case WM_RBUTTONDOWN:
+                {
+                    SetCursorPos(game.input.mouseDefaultPosX, game.input.mouseDefaultPosY);
+                    ShowCursor(FALSE);
+                    SetMouseButtonPress(&game.input, 1);
+                }break;
+                case WM_RBUTTONUP:
+                {
+                    ShowCursor(TRUE);
+                    SetMouseButtonUp(&game.input, 1);                   
+                }break;
+                default:
+                {
+                    TranslateMessage(&message);
+                    DispatchMessage(&message);    
+                }break;
+            }
         }
         else
-        {
-            // TODO: Update and Render the Game...
+        {    
+            LARGE_INTEGER counter;
+            QueryPerformanceCounter(&counter);
+            // get the delta time...
+            uint64_t counterElapse = counter.QuadPart - oldCounter.QuadPart;
+            float deltaTime = (counterElapse / (float)frequency);
+
+            // update game...
+            if(should_update_mouse_pos == true)
+            {
+                game.input.mouseDefaultPosX = xOffset + (windowRect.right - windowRect.left) / 2;
+                game.input.mouseDefaultPosY = yOffset + (windowRect.bottom - windowRect.top) / 2;
+                should_update_mouse_pos = false;
+            }
+
+            if(game.input.gamePadConected == true)
+            {
+                ProcessGamePads(&game.input);            
+            }
+
             glClearColor(0.2f, 0.0f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // render game...
-            GameUnpdateAndRender(&game, 1.0f);
+            GameUnpdateAndRender(&game, deltaTime);
 
             SwapBuffers(handle_device_context);
-
+            game.input.mouseIncX = 0.0f;
+            game.input.mouseIncY = 0.0f;     
+            oldCounter = counter;
         }
     }
 

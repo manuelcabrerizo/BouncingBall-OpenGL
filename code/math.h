@@ -3,6 +3,11 @@
 
 #define PI 3.14159265359
 
+struct Vec2
+{
+    float x, y;
+};
+
 struct Vec3
 {
     float x, y, z;
@@ -13,6 +18,9 @@ struct Matrix
     float m[4][4];
 };
 
+float to_radiant(float v);
+float absf(float f);
+
 Vec3 operator+(const Vec3& a, const Vec3& b);
 Vec3 operator-(const Vec3& a, const Vec3& b);
 void operator+=(Vec3& a, const Vec3& b);
@@ -22,6 +30,7 @@ Vec3 operator-(const Vec3& v, const float& s);
 Vec3 operator*(const Vec3& v, const float& s);
 Vec3 operator/(const Vec3& v, const float& s);
 Vec3 operator-(const Vec3& v);
+Vec3 vec3_rotate_y(Vec3 v, float angle);
 
 Matrix operator+(const Matrix& a, const Matrix& b);
 Matrix operator-(const Matrix& a, const Matrix& b);
