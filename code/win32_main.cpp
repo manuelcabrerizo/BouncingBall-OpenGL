@@ -34,7 +34,6 @@ LRESULT CALLBACK WindowProc(
         {
         // TODO(Manuto): handle the case the we move the window
         // we should recalculate de mouse default position...
-            OutputDebugString("WINDOW::MOVE::!!!!!\n");
             xOffset = (int)(short)LOWORD(lParam);   // horizontal position 
             yOffset = (int)(short)HIWORD(lParam);   // vertical position
             should_update_mouse_pos = true; 
@@ -233,11 +232,6 @@ int WinMain(
                         game.input.mouseIncX += cursorPos.x - (float)game.input.mouseDefaultPosX;
                         game.input.mouseIncY += cursorPos.y - (float)game.input.mouseDefaultPosY;
                         SetCursorPos(game.input.mouseDefaultPosX, game.input.mouseDefaultPosY);
-                    }
-                    else
-                    { 
-                        game.input.mouseIncX = 0.0f;
-                        game.input.mouseIncY = 0.0f; 
                     }
 
                 }break;

@@ -12,14 +12,24 @@
 #define LEFTBUTTON 0
 #define RIGHTBUTTON 1
 
+struct Terrain
+{
+    unsigned int vao;
+    VertexBuffer* vertexBuffer;
+    int*  indexBuffer;
+    int numIndex;
+};
+
 struct MainGame
 {
     Shader main_shader;
     Shader mesh_shader; 
     unsigned int triangle_vao;
     Mesh sphere;
+    Mesh SuperPene;
     Input input;
     Camera camera;
+    Terrain terrain;
 };
 
 void GameInit(MainGame* game);

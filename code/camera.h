@@ -11,6 +11,7 @@ struct Camera
     Vec3 right;
     Vec3 target;
     Vec3 up;
+    Vec3 front;
     Matrix viewMat;
     float pitch;
     float yaw;

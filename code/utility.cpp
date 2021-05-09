@@ -23,7 +23,7 @@ char* ReadFile(const char* file_path)
     // go back to the start of the file
     fseek(file, 0, SEEK_SET);
     // alloc the memory     
-    buffer = (char*)malloc(file_size + 1);
+    buffer = (char*)malloc((file_size + 1) * sizeof(char));
     if(buffer == NULL)
     {
         OutputDebugString("ERROR::ALLOCATING::MEMORY::FOR::BUFFER\n");
@@ -258,8 +258,8 @@ void LoadOBJFileIndex(Mesh* mesh, const char* filePhat, const char* texFileName)
 
     if(mesh->tex.pixels != NULL)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mesh->tex.width, mesh->tex.height,
-                                    0, GL_BGR, GL_UNSIGNED_BYTE, mesh->tex.pixels);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mesh->tex.width, mesh->tex.height,
+                                    0, GL_BGRA, GL_UNSIGNED_BYTE, mesh->tex.pixels);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
