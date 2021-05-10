@@ -270,3 +270,112 @@ void LoadOBJFileIndex(Mesh* mesh, const char* filePhat, const char* texFileName)
 
     mesh->model = get_identity_matrix();
 }
+
+void GenerateTerrain(Terrain* terrain,
+                     int posX,
+                     int posZ,
+                     int numCols,
+                     int numRows,
+                     int cellSpacing,
+                     const char* texFileName)
+{
+    // first we need to store space to generate the terrain
+    // get the size of the data structures we need
+    int numbVertex    = numCols * numRows;
+    int numCellRows   = numRows - 1;
+    int numCellCols   = numCols - 1;
+    int numTriangles  = 2 * (numCellRows * numCellCols);
+    terrain->numIndex = numTriangles * 3;
+    // get a pointer to that memory
+    terrain->vertexBuffer = (VertexBuffer*)malloc(numbVertex * sizeof(VertexBuffer));
+    terrain->indexBuffer  = (int*) malloc(terrain->numIndex * sizeof(int));
+
+    for(int y = 0; y < numRows; y++)
+    {
+        for(int x = 0; x < numCols; x++)
+        {
+            Vec3 vertexPos = {0.0f, 0.0f, 0.0f};
+            if( x <= numCols / 2)
+            {
+                vertexPos = {(float)posX + (float)(x * cellSpacing),
+                             0.0f,
+                             (float)posZ + (float)(y * cellSpacing)};
+            }
+            else
+            {
+                vertexPos = {(float)posX + (float)(x * cellSpacing),
+                             1.0f,
+                             (float)posZ + (float)(y * cellSpacing)};
+        
+            }
+            Vec3 normalPos = {0.0f, 1.0f, 0.0f}; 
+            Vec2 texturePos = {(float)x, (float)y};
+
+            int index = (y * numCols) + x;
+            terrain->vertexBuffer[index].vertice      = vertexPos;
+            terrain->vertexBuffer[index].normal       = normalPos;
+            terrain->vertexBuffer[index].textureCoord = texturePos;
+        }
+    }
+
+    int index = 0;
+    for(int y = 0; y < numCellRows; y++)
+    {
+        for(int x = 0; x < numCellCols; x++)
+        {
+            terrain->indexBuffer[index + 0] = ((y + 1) * numCols) + x;  
+            terrain->indexBuffer[index + 1] = (y * numCols) + (x + 1);
+            terrain->indexBuffer[index + 2] = (y * numCols) + x;
+
+            terrain->indexBuffer[index + 3] = ((y + 1) * numCols) + (x + 1);
+            terrain->indexBuffer[index + 4] = (y * numCols) + (x + 1);
+            terrain->indexBuffer[index + 5] = ((y + 1) * numCols) + x;
+            index += 6;
+        }
+    }
+    
+    glGenVertexArrays(1, &terrain->vao);
+    glBindVertexArray(terrain->vao);
+
+    unsigned int vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, numbVertex * sizeof(VertexBuffer), terrain->vertexBuffer, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexBuffer), (void*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexBuffer), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexBuffer), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+
+    unsigned int ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, terrain->numIndex * sizeof(int), terrain->indexBuffer, GL_STATIC_DRAW);
+    
+    free(terrain->vertexBuffer);
+    free(terrain->indexBuffer);
+
+    unsigned int texture1;
+    glGenTextures(1, &texture1);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    terrain->texId = texture1;
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    terrain->tex = LoadBMP(texFileName);
+    if(terrain->tex.pixels != NULL)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, terrain->tex.width, terrain->tex.height,
+                                    0, GL_BGRA, GL_UNSIGNED_BYTE, terrain->tex.pixels);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        OutputDebugString("ERROR::LOADING::BMP::FILE\n");
+    }
+    free(terrain->tex.pixels);
+}

@@ -68,11 +68,22 @@ void LoadShader(
     }
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
+
+    UseShader(shader);
+    shader->projMatLoc  = glGetUniformLocation(shader->id, "Proj");
+    shader->viewMatLoc  = glGetUniformLocation(shader->id, "View");
+    shader->worldMatLoc = glGetUniformLocation(shader->id, "World");
 }
 
 void UseShader(Shader* shader)
 {
     glUseProgram(shader->id);
+}
+
+
+void SetShaderMatrix(Matrix m, int matLoc)
+{
+    glUniformMatrix4fv(matLoc, 1, GL_FALSE, m.m[0]);
 }
 
 

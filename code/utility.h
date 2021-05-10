@@ -62,8 +62,25 @@ struct Mesh
     bool should_render = true;
 };
 
+struct Terrain
+{
+    unsigned int vao;
+    VertexBuffer* vertexBuffer;
+    int*  indexBuffer;
+    int numIndex;
+    Texture tex;
+    uint32_t texId;
+};
+
 char* ReadFile(const char* file_path);
 Texture LoadBMP(const char* filename);
 void LoadOBJFileIndex(Mesh* mesh, const char* filePhat, const char* texFileName);
+void GenerateTerrain(Terrain* terrain,
+                     int posX,
+                     int posZ,
+                     int numCols,
+                     int numRows,
+                     int cellSpacing,
+                     const char* texFileName);
 
 #endif
