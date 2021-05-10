@@ -23,6 +23,9 @@ struct MainGame
     Line xAxis;
     Line yAxis;
     Line zAxis;
+    Plane testPlane;
+    Mesh ball;
+    Line ballDirection;
 };
 
 void GameInit(MainGame* game);

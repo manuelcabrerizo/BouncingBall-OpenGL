@@ -116,8 +116,8 @@ bool InitOpengGLContext(HWND* hWnd, HDC* handle_device_context)
     }
     
     // set up initial configuration for open GL...
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_FRONT);
     glViewport(0, 0, WNDWIDTH, WNDHEIGHT);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_DEPTH_TEST); 
@@ -286,7 +286,7 @@ int WinMain(
                 ProcessGamePads(&game.input);            
             }
 
-            glClearColor(0.2f, 0.0f, 0.3f, 1.0f);
+            glClearColor(0.03f, 0.0f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // render game...

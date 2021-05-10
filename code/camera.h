@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include "math.h"
 #include "input.h"
+#include "line.h"
+#include "shader.h"
 
 struct Camera
 {
@@ -17,7 +19,7 @@ struct Camera
     float yaw;
 };
 
-void InitializeCamera(Camera* camera);
+void InitializeCamera(Camera* camera, Shader* shader);
 void UpdateCamera(Camera* camera, Input* input, float deltaTime);
 
 #endif

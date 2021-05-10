@@ -4,6 +4,8 @@
 Line GenLine(Vec3 a, Vec3 b, Vec3 color, Shader* shader)
 {
     Line newLine;
+    newLine.a = a;
+    newLine.b = b;
     newLine.vertices[0]  = a.x; 
     newLine.vertices[1]  = a.y;
     newLine.vertices[2]  = a.z;
@@ -32,11 +34,95 @@ Line GenLine(Vec3 a, Vec3 b, Vec3 color, Shader* shader)
     return newLine;
 }
 
-void DrawLine(Line* line)
+void DrawLine(Line* line, Matrix model)
 {
     UseShader(&line->shader);
     glBindVertexArray(line->vao);
-    Matrix model = get_identity_matrix();
     SetShaderMatrix(model, line->shader.worldMatLoc);
     glDrawArrays(GL_LINES, 0, 2); 
 }
+
+Plane GenPlane(Vec3 a, Vec3 b, Vec3 c, Vec3 color, Shader* shader)
+{
+    Plane newPlane;
+    newPlane.a = a;
+    newPlane.u = b - a;
+    newPlane.v = c - a;
+
+    for(int i = 0; i < 24; i += 6)
+    {
+        if(i < 6)
+        {
+            newPlane.vertices[i + 0] = 0.0f;
+            newPlane.vertices[i + 1] = 0.0f;
+            newPlane.vertices[i + 2] = 0.0f;
+            newPlane.vertices[i + 3] = color.x;
+            newPlane.vertices[i + 4] = color.y;
+            newPlane.vertices[i + 5] = color.z;
+        }
+        else if(i >= 6 && i < 12)
+        {
+            newPlane.vertices[i + 0] = newPlane.u.x;
+            newPlane.vertices[i + 1] = newPlane.u.y;
+            newPlane.vertices[i + 2] = newPlane.u.z;
+            newPlane.vertices[i + 3] = color.x;
+            newPlane.vertices[i + 4] = color.y;
+            newPlane.vertices[i + 5] = color.z;
+        }
+        else if(i >= 12 && i < 18)
+        {
+            newPlane.vertices[i + 0] = newPlane.v.x;
+            newPlane.vertices[i + 1] = newPlane.v.y;
+            newPlane.vertices[i + 2] = newPlane.v.z;
+            newPlane.vertices[i + 3] = color.x;
+            newPlane.vertices[i + 4] = color.y;
+            newPlane.vertices[i + 5] = color.z;
+        }
+        else if(i >= 18)
+        {
+            newPlane.vertices[i + 0] = newPlane.u.x + newPlane.v.x;
+            newPlane.vertices[i + 1] = newPlane.u.y + newPlane.v.y;
+            newPlane.vertices[i + 2] = newPlane.u.z + newPlane.v.z;
+            newPlane.vertices[i + 3] = color.x;
+            newPlane.vertices[i + 4] = color.y;
+            newPlane.vertices[i + 5] = color.z;
+        }
+        
+    }
+
+    newPlane.indices[0] = 0;
+    newPlane.indices[1] = 3;
+    newPlane.indices[2] = 2;
+    newPlane.indices[3] = 0;
+    newPlane.indices[4] = 1;
+    newPlane.indices[5] = 3;
+
+    newPlane.shader = *shader;
+    glGenVertexArrays(1, &newPlane.vao);
+    glBindVertexArray(newPlane.vao);
+    unsigned int vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(newPlane.vertices), newPlane.vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    unsigned ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(int), newPlane.indices, GL_STATIC_DRAW);
+
+    return newPlane;
+}
+
+void DrawPlane(Plane* plane, Matrix model)
+{
+    UseShader(&plane->shader);
+    glBindVertexArray(plane->vao);
+    SetShaderMatrix(model, plane->shader.worldMatLoc);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+

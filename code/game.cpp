@@ -16,13 +16,13 @@ void GameInit(MainGame* game)
             "./code/sphereVertexShader.vert",
             "./code/sphereFragmentShader.frag"); 
 
-    Matrix proj = get_projection_perspective_matrix(to_radiant(45), WNDWIDTH/WNDHEIGHT, 0.1f, 100.0f); 
+    Matrix proj = get_projection_perspective_matrix(to_radiant(90), WNDWIDTH/WNDHEIGHT, 0.1f, 100.0f); 
     UseShader(&game->main_shader);
     SetShaderMatrix(proj, game->main_shader.projMatLoc);
     UseShader(&game->mesh_shader);
     SetShaderMatrix(proj, game->mesh_shader.projMatLoc);
 
-    InitializeCamera(&game->camera);
+    InitializeCamera(&game->camera, &game->main_shader);
    
     game->xAxis = GenLine({-100.0f, 0.0f, 0.0f},
                           { 100.0f, 0.0f, 0.0f},
@@ -37,7 +37,20 @@ void GameInit(MainGame* game)
                           { 0.0f, 0.0f, 1.0f},
                           &game->main_shader);
 
+    game->testPlane = GenPlane({0.0f, 0.0f, 0.0f},
+                               {4.0f, 0.0f, 0.0f},
+                               {0.0f, 6.0f, 0.0f},
+                               {1.0f, 1.0f, 0.0f},
+                               &game->main_shader);
+
     GenerateTerrain(&game->terrain, -10, -10, 20, 20, 1, "./data/grass.bmp");
+
+    LoadOBJFileIndex(&game->ball, "./data/bullet.obj", "./data/bullet.bmp");
+
+    game->ballDirection = GenLine({ 1.0f, 2.0f,-8.0f},
+                                  { 3.0f, 2.0f, 8.0f},
+                                  { 1.0f, 1.0f, 1.0f},
+                                  &game->main_shader);
 }
 
 void GameUnpdateAndRender(MainGame* game, float deltaTime)
@@ -50,15 +63,26 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
     SetShaderMatrix(game->camera.viewMat, game->mesh_shader.viewMatLoc);
 
     // Render...
-    DrawLine(&game->xAxis);
-    DrawLine(&game->yAxis);
-    DrawLine(&game->zAxis);
-
+    DrawLine(&game->xAxis, get_identity_matrix());
+    DrawLine(&game->yAxis, get_identity_matrix());
+    DrawLine(&game->zAxis, get_identity_matrix());
+    DrawLine(&game->ballDirection, get_identity_matrix());
+    DrawPlane(&game->testPlane, get_identity_matrix());
+    
     UseShader(&game->mesh_shader);
     glBindTexture(GL_TEXTURE_2D, game->terrain.texId);
     glBindVertexArray(game->terrain.vao);
     Matrix model = get_identity_matrix();
     SetShaderMatrix(model, game->mesh_shader.worldMatLoc);
     glDrawElements(GL_TRIANGLES, game->terrain.numIndex, GL_UNSIGNED_INT, 0);
+
+    static float time = 0;
+    glBindTexture(GL_TEXTURE_2D, game->ball.texId);
+    glBindVertexArray(game->ball.vao);
+    model = get_scale_matrix({0.1f, 0.1f, 0.1f}) *
+            get_translation_matrix(Lerp(game->ballDirection.a, game->ballDirection.b, absf(sinf(time))));
+    SetShaderMatrix(model, game->mesh_shader.worldMatLoc);
+    glDrawElements(GL_TRIANGLES, game->ball.numIndex * 3, GL_UNSIGNED_INT, 0);
+    time += deltaTime;
 
 }

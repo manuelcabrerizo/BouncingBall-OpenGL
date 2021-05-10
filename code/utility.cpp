@@ -294,20 +294,10 @@ void GenerateTerrain(Terrain* terrain,
     {
         for(int x = 0; x < numCols; x++)
         {
-            Vec3 vertexPos = {0.0f, 0.0f, 0.0f};
-            if( x <= numCols / 2)
-            {
-                vertexPos = {(float)posX + (float)(x * cellSpacing),
+
+            Vec3 vertexPos = {(float)posX + (float)(x * cellSpacing),
                              0.0f,
                              (float)posZ + (float)(y * cellSpacing)};
-            }
-            else
-            {
-                vertexPos = {(float)posX + (float)(x * cellSpacing),
-                             1.0f,
-                             (float)posZ + (float)(y * cellSpacing)};
-        
-            }
             Vec3 normalPos = {0.0f, 1.0f, 0.0f}; 
             Vec2 texturePos = {(float)x, (float)y};
 
