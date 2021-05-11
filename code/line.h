@@ -28,7 +28,8 @@ Line GenLine(Vec3 a, Vec3 b, Vec3 color, Shader* shader);
 void DrawLine(Line* line, Matrix model);
 Plane GenPlane(Vec3 a, Vec3 b, Vec3 c, Vec3 color, Shader* shader);
 void DrawPlane(Plane* plane, Matrix model);
-
-
+Vec3 Lerp(Vec3 a, Vec3 b, float t);
+Vec3 LerpPlane(Plane* plane, float s, float t); 
+float LineIntersectsAt(Line* l1, Line* l2);
 
 #endif

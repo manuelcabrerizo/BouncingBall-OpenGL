@@ -286,11 +286,13 @@ Vec3 normaliza_vec3(Vec3 v)
     return result;
 }
 
-Vec3 Lerp(Vec3 a, Vec3 b, float t)
-{       
-    Vec3 v = b - a;
-    Vec3 result = a + (v * t);
+Vec3 PerpZVec3(Vec3 v)
+{
+    Vec3 result;
+    result.x = -v.z;
+    result.z =  v.x;
     return result;
 }
+
 
 

@@ -48,6 +48,6 @@ float vec3_dot(Vec3 a, Vec3 b);
 Vec3 vec3_cross(Vec3 a, Vec3 b);
 float vec3_length(Vec3 v);
 Vec3 normaliza_vec3(Vec3 v);
-Vec3 Lerp(Vec3 a, Vec3 b, float t);
-    
+Vec3 PerpZVec3(Vec3 v);
+
 #endif

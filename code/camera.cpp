@@ -3,7 +3,7 @@
 
 void InitializeCamera(Camera* camera, Shader* shader)
 {
-    camera->position = {0.0f, 1.0f, 0.0f}; 
+    camera->position = {0.0f, 1.0f, -1.0f}; 
     camera->target   = {0.0f, 1.0f, 1.0f};
     camera->up       = {0.0f, 1.0f, 0.0f};
     camera->right    = vec3_cross(camera->up, camera->target);
@@ -33,27 +33,27 @@ void UpdateCamera(Camera* camera, Input* input, float deltaTime)
     // get keyboard input and move the camera...
     if(GetKeyDown(input, 'W'))
     {
-        camera->position +=  (camera->front * 5.0f) * deltaTime;
+        camera->position +=  (camera->front * 2.0f) * deltaTime;
     }
     if(GetKeyDown(input, 'S'))
     {
-        camera->position -= (camera->front * 5.0f) * deltaTime;
+        camera->position -= (camera->front * 2.0f) * deltaTime;
     }
     if(GetKeyDown(input, 'A'))
     {
-        camera->position += (camera->right * 5.0f) * deltaTime;
+        camera->position += (camera->right * 2.0f) * deltaTime;
     }
     if(GetKeyDown(input, 'D'))
     {
-        camera->position -= (camera->right * 5.0f) * deltaTime;
+        camera->position -= (camera->right * 2.0f) * deltaTime;
     }
     if(GetKeyDown(input, 0x10))  // check SHIFT is down
     {
-        camera->position += (camera->up * 5.0f)    * deltaTime;
+        camera->position += (camera->up * 2.0f)    * deltaTime;
     }
     if(GetKeyDown(input, 0x11)) // check CTRL is down
     {
-        camera->position -= (camera->up * 5.0f)    * deltaTime;
+        camera->position -= (camera->up * 2.0f)    * deltaTime;
     }
     // recalculate the view matrix every frame to update the shader
     camera->viewMat = get_view_matrix(camera->position, camera->position + camera->target, camera->up);

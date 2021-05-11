@@ -126,3 +126,27 @@ void DrawPlane(Plane* plane, Matrix model)
 }
 
 
+Vec3 Lerp(Vec3 a, Vec3 b, float t)
+{       
+    Vec3 v = b - a;
+    Vec3 result = a + (v * t);
+    return result;
+}
+
+Vec3 LerpPlane(Plane* plane, float s, float t)
+{
+    Vec3 result;
+    result.x = plane->a.x + plane->v.x * s + plane->u.x * t;
+    result.y = plane->a.y + plane->v.y * s + plane->u.y * t;
+    result.z = plane->a.z + plane->v.z * s + plane->u.z * t;
+    return result;
+}
+
+float LineIntersectsAt(Line* l1, Line* l2)
+{
+    Vec3 c = l2->a - l1->a;
+    Vec3 u = l1->b - l1->a;
+    Vec3 v = l2->b - l2->a;
+    float t = vec3_dot(PerpZVec3(v), c) / vec3_dot(PerpZVec3(v), u);
+    return t;
+}

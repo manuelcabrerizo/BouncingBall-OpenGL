@@ -26,6 +26,7 @@ struct MainGame
     Plane testPlane;
     Mesh ball;
     Line ballDirection;
+    Line intersectionLine;
 };
 
 void GameInit(MainGame* game);
