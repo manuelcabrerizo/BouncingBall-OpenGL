@@ -1,7 +1,7 @@
 #include "camera.h"
 #include <math.h>
 
-void InitializeCamera(Camera* camera, Shader* shader)
+void InitializeCamera(Camera* camera)
 {
     camera->position = {0.0f, 1.0f, -1.0f}; 
     camera->target   = {0.0f, 1.0f, 1.0f};

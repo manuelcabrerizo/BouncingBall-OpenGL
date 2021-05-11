@@ -19,7 +19,7 @@ struct Camera
     float yaw;
 };
 
-void InitializeCamera(Camera* camera, Shader* shader);
+void InitializeCamera(Camera* camera);
 void UpdateCamera(Camera* camera, Input* input, float deltaTime);
 
 #endif
