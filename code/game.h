@@ -27,6 +27,7 @@ struct MainGame
     Mesh ball;
     Line ballDirection;
     Line intersectionLine;
+    Vec3 ballTrans;
 };
 
 void GameInit(MainGame* game);

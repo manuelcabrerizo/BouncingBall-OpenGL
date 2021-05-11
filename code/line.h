@@ -31,5 +31,7 @@ void DrawPlane(Plane* plane, Matrix model);
 Vec3 Lerp(Vec3 a, Vec3 b, float t);
 Vec3 LerpPlane(Plane* plane, float s, float t); 
 float LineIntersectsAt(Line* l1, Line* l2);
+float LinePlaneIntersectsAt(Line* line, Plane* plane);
+Vec3 Reflect(Line* line, Vec3 normal);
 
 #endif
