@@ -31,6 +31,27 @@ Vec3 vec3_rotate_y(Vec3 v, float angle)
     return rotatedVector;
 }
 
+
+bool operator==(const Vec3& a, const Vec3& b)
+{
+    if(a.x == b.x && a.y == b.y && a.z == b.z)
+    {
+        return true;
+    }
+    return false;
+}
+
+
+bool operator!=(const Vec3& a, const Vec3& b)
+{
+    if(a.x != b.x || a.y != b.y || a.z == b.z)
+    {
+        return true;
+    }
+    return false;
+
+}
+
 Vec3 operator+(const Vec3& a, const Vec3& b)
 {
     Vec3 result;

@@ -22,51 +22,78 @@ void GameInit(MainGame* game)
     game->xAxis = GenLine({-100.0f, 0.0f, 0.0f}, {100.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, &game->main_shader);  
     game->yAxis = GenLine({0.0f, -100.0f, 0.0f}, {0.0f, 100.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, &game->main_shader);
     game->zAxis = GenLine({0.0f, 0.0f, -100.0f}, {0.0f, 0.0f, 100.0f}, {0.0f, 0.0f, 1.0f}, &game->main_shader);
-    game->testPlane = GenPlane({0.0f, 0.0f, 0.0f}, {4.0f, 0.0f, 0.0f}, {0.0f, 6.0f, 0.0f}, {1.0f, 1.0f, 0.0f}, &game->main_shader);
+    // Generate the two planes...
+    game->planes[0] = GenPlane({0.0f, 1.0f, 0.0f}, {4.0f, 1.0f, 0.0f}, {0.0f, 6.0f, 0.0f}, {1.0f, 1.0f, 0.0f}, &game->main_shader);
+    game->planes[1] = GenPlane({0.0f, 1.0f, 4.0f}, {4.0f, 1.0f, 4.0f}, {0.0f, 6.0f, 4.0f}, {0.0f, 1.0f, 0.0f}, &game->main_shader);
+    game->planes[2] = GenPlane({0.0f, 1.0f, 0.0f}, {4.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 4.0f}, {1.0f, 0.0f, 0.0f}, &game->main_shader);
+    game->planes[3] = GenPlane({0.0f, 6.0f, 0.0f}, {4.0f, 6.0f, 0.0f}, {0.0f, 6.0f, 4.0f}, {0.0f, 0.0f, 1.0f}, &game->main_shader);
+    game->planes[4] = GenPlane({0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 4.0f}, {0.0f, 6.0f, 0.0f}, {0.0f, 1.0f, 1.0f}, &game->main_shader);
+    game->planes[5] = GenPlane({4.0f, 1.0f, 0.0f}, {4.0f, 1.0f, 4.0f}, {4.0f, 6.0f, 0.0f}, {0.3f, 0.5f, 1.0f}, &game->main_shader);
+
     game->ballDirection = GenLine({-2.0f, 2.0f, 4.0f}, {5.0f, 8.0f, -4.0f}, {1.0f, 0.0f, 1.0f}, &game->main_shader);
     game->intersectionLine = GenLine({-4.0f, 2.0f,-8.0f}, { 4.0f, 2.0f, 8.0f}, { 1.0f, 0.7f, 0.3f}, &game->main_shader);
     GenerateTerrain(&game->terrain, -10, -10, 20, 20, 1, "./data/terrain.bmp");
     LoadOBJFileIndex(&game->ball, "./data/bullet.obj", "./data/bullet.bmp");
     
-    game->projectile.start = {0.0f, 0.0f, 0.0f};
-    game->projectile.position         = {0.0f, 1.0f, 0.0f};
-    game->projectile.end           = {1.0f, 1.0f, 0.0f};
-    game->projectile.speed            = 1.0f;
+    game->projectile.start    = {0.0f, 0.0f, 0.0f};
+    game->projectile.position = {0.0f, 0.0f, 0.0f};
+    game->projectile.end      = {0.0f, 0.0f, 0.0f};
+    game->projectile.speed    = 1.0f;
     LoadOBJFileIndex(&game->projectile.mesh, "./data/bullet.obj", "./data/bullet.bmp");
 }
 
-void ShootProjectile(Projectile* projectile, Vec3 start, Vec3 end)
+void ShootProjectile(Projectile* projectile, Plane plane[], Vec3 start, Vec3 end)
 {
     projectile->start = start;
     projectile->end   = end;
     projectile->distance = 0.0f;
 
-    char buffer[100];
-    sprintf(buffer, "start: x: %f, y: %f, z: %f\n", projectile->start.x, projectile->start.y, projectile->start.z);
-    OutputDebugString(buffer);
-    sprintf(buffer, "end: x: %f, y: %f, z: %f\n", projectile->end.x, projectile->end.y, projectile->end.z);
-    OutputDebugString(buffer);
+    float intersections[6];
+    for(int i = 0; i < 6; i++)         
+    {
+        intersections[i] = Vec3PlaneIntersectsAt(projectile->start, projectile->end, &plane[i]);
+        if(intersections[i] < 0)
+        {
+            intersections[i] = 100000;
+        }
+    }
+    
+    for(int i = 0; i < 6; i++)
+    {
+        if(i == 0)
+        {
+            projectile->planeIntersection = intersections[i];
+            projectile->index = 0;
+        }
+        else
+        {
+            if(projectile->planeIntersection > intersections[i])
+            {
+                projectile->planeIntersection = intersections[i];
+                projectile->index = i;
+            }
+        }   
+    }
+
 }
 
-Matrix UpdateProjectile(Projectile* projectile, Plane* plane, float deltaTime)
+Matrix UpdateProjectile(Projectile* projectile, Plane plane[], int numberOfPlanes, float deltaTime)
 {
     Matrix model = get_identity_matrix();
-    float planeIntersection = Vec3PlaneIntersectsAt(projectile->start, projectile->end, plane);
-
     if(projectile->distance <= 1.0f)
     {
-        if(planeIntersection >= 0.0f && planeIntersection <= 1.0f)
+        if(projectile->planeIntersection >= 0.0f && projectile->planeIntersection <= 1.0f)
         {
-            if(projectile->distance <= planeIntersection)
-            {
+            if(projectile->distance <= projectile->planeIntersection)
+            {   
                 projectile->position = Lerp(projectile->start, projectile->end, projectile->distance); 
             } 
             else
             {
                 Vec3 newTraget = normaliza_vec3(Vec3Reflect(projectile->start,
                                                 projectile->end,
-                                                vec3_cross(plane->u, plane->v)));
-                ShootProjectile(projectile, projectile->position, projectile->position + (newTraget * 10));
+                                                vec3_cross(plane[projectile->index].u, plane[projectile->index].v)));
+                ShootProjectile(projectile, plane, projectile->position, projectile->position + (newTraget * 10));
             }
         }
         else
@@ -74,10 +101,11 @@ Matrix UpdateProjectile(Projectile* projectile, Plane* plane, float deltaTime)
             projectile->position = Lerp(projectile->start, projectile->end, projectile->distance); 
         }
     }
-
+    
     model = get_translation_matrix(projectile->position);
     projectile->distance += projectile->speed * deltaTime;
     return model;
+    
 }
 
 void GameUnpdateAndRender(MainGame* game, float deltaTime)
@@ -94,8 +122,14 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
     DrawLine(&game->zAxis, get_identity_matrix());
     DrawLine(&game->ballDirection, get_identity_matrix());
     DrawLine(&game->intersectionLine, get_identity_matrix());
-    DrawPlane(&game->testPlane, get_translation_matrix(game->testPlane.a));
-    
+    DrawPlane(&game->planes[0], get_translation_matrix(game->planes[0].a));
+    DrawPlane(&game->planes[1], get_translation_matrix(game->planes[1].a));
+    DrawPlane(&game->planes[2], get_translation_matrix(game->planes[2].a)); 
+    DrawPlane(&game->planes[3], get_translation_matrix(game->planes[3].a));
+    DrawPlane(&game->planes[4], get_translation_matrix(game->planes[4].a)); 
+    DrawPlane(&game->planes[5], get_translation_matrix(game->planes[5].a));
+
+
     UseShader(&game->mesh_shader);
     glBindTexture(GL_TEXTURE_2D, game->terrain.texId);
     glBindVertexArray(game->terrain.vao);
@@ -106,7 +140,7 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
     glBindTexture(GL_TEXTURE_2D, game->ball.texId);
     glBindVertexArray(game->ball.vao);
     
-    float planeIntersection = LinePlaneIntersectsAt(&game->ballDirection, &game->testPlane);
+    float planeIntersection = LinePlaneIntersectsAt(&game->ballDirection, &game->planes[0]);
     static float ballPosition = 0.0f; 
     if(planeIntersection >= 0.0f && planeIntersection <= 1.0f)
     {
@@ -116,7 +150,7 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
         }
         else
         {
-            game->ballTrans += Reflect(&game->ballDirection, vec3_cross(game->testPlane.u, game->testPlane.v)) * deltaTime; 
+            game->ballTrans += Reflect(&game->ballDirection, vec3_cross(game->planes[0].u, game->planes[0].v)) * deltaTime; 
         }
         model = get_scale_matrix({0.1f, 0.1f, 0.1f}) * get_translation_matrix(game->ballTrans);
         SetShaderMatrix(model, game->mesh_shader.worldMatLoc);
@@ -124,7 +158,7 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
     }
     ballPosition += 0.1f * deltaTime;
 
-    float planeIntersection2 = LinePlaneIntersectsAt(&game->intersectionLine, &game->testPlane);
+    float planeIntersection2 = LinePlaneIntersectsAt(&game->intersectionLine, &game->planes[0]);
     if(planeIntersection2 >= 0.0f && planeIntersection2 <= 1.0f)
     {
         model = get_scale_matrix({0.1f, 0.1f, 0.1f}) *
@@ -148,20 +182,20 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
 
 
     // START::PROCCESING::OUR::PROJECTILE::STUFF...
-    Matrix projectileModel = get_scale_matrix({0.1f, 0.1f, 0.1f}) * UpdateProjectile(&game->projectile, &game->testPlane, deltaTime);
+    Matrix projectileModel = get_scale_matrix({0.1f, 0.1f, 0.1f}) * UpdateProjectile(&game->projectile, game->planes, 6, deltaTime);
     static bool mouseLButtonPress = false; 
     if(GetMouseButtonPress(&game->input, LEFTBUTTON) && mouseLButtonPress == false)
     {
-        ShootProjectile(&game->projectile, game->camera.position, game->camera.position + (game->camera.target * 10.0f));
+        ShootProjectile(&game->projectile, game->planes, game->camera.position, game->camera.position + (game->camera.target * 10.0f));
         mouseLButtonPress = true;
     }
     if(!GetMouseButtonPress(&game->input, LEFTBUTTON) && mouseLButtonPress == true)
     {
         mouseLButtonPress = false;
     }
-    SetShaderMatrix(projectileModel, game->mesh_shader.worldMatLoc);
-    glDrawElements(GL_TRIANGLES, game->ball.numIndex * 3, GL_UNSIGNED_INT, 0);
-
-
-
+    if(game->projectile.distance <= 1.0f)
+    {
+        SetShaderMatrix(projectileModel, game->mesh_shader.worldMatLoc);
+        glDrawElements(GL_TRIANGLES, game->ball.numIndex * 3, GL_UNSIGNED_INT, 0);
+    }
 }

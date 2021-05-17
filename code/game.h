@@ -21,6 +21,8 @@ struct Projectile
     Vec3 end;
     float speed;
     float distance;
+    float planeIntersection;
+    int index;
     Mesh mesh; 
 };
 
@@ -34,7 +36,7 @@ struct MainGame
     Line xAxis;
     Line yAxis;
     Line zAxis;
-    Plane testPlane;
+    Plane planes[6];
     Mesh ball;
     Line ballDirection;
     Line intersectionLine;

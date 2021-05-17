@@ -24,6 +24,8 @@ int Abs(int number);
 
 Vec3 operator+(const Vec3& a, const Vec3& b);
 Vec3 operator-(const Vec3& a, const Vec3& b);
+bool operator==(const Vec3& a, const Vec3& b);
+bool operator!=(const Vec3& a, const Vec3& b);
 void operator+=(Vec3& a, const Vec3& b);
 void operator-=(Vec3& a, const Vec3& b);
 Vec3 operator+(const Vec3& v, const float& s);
