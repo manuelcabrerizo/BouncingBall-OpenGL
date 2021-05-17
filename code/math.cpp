@@ -15,6 +15,13 @@ float absf(float f)
     return f;
 }
 
+int Abs(int number)
+{
+    if((number & 1 << 31) != 0) 
+        return (number & ~(1 << 31)) - (2147483648 + (number << 1)); 
+    return number;
+}
+
 Vec3 vec3_rotate_y(Vec3 v, float angle)
 {
     Vec3 rotatedVector;

@@ -23,10 +23,17 @@ void GameInit(MainGame* game)
     game->yAxis = GenLine({0.0f, -100.0f, 0.0f}, {0.0f, 100.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, &game->main_shader);
     game->zAxis = GenLine({0.0f, 0.0f, -100.0f}, {0.0f, 0.0f, 100.0f}, {0.0f, 0.0f, 1.0f}, &game->main_shader);
     game->testPlane = GenPlane({0.0f, 0.0f, 0.0f}, {4.0f, 0.0f, 0.0f}, {0.0f, 6.0f, 0.0f}, {1.0f, 1.0f, 0.0f}, &game->main_shader);
-    game->ballDirection = GenLine({-2.0f, 2.0f,-2.0f}, {5.0f, 2.0f, 2.0f}, {1.0f, 0.0f, 1.0f}, &game->main_shader);
+    game->ballDirection = GenLine({-2.0f, 2.0f, 4.0f}, {5.0f, 8.0f, -4.0f}, {1.0f, 0.0f, 1.0f}, &game->main_shader);
     game->intersectionLine = GenLine({-4.0f, 2.0f,-8.0f}, { 4.0f, 2.0f, 8.0f}, { 1.0f, 0.7f, 0.3f}, &game->main_shader);
     GenerateTerrain(&game->terrain, -10, -10, 20, 20, 1, "./data/terrain.bmp");
     LoadOBJFileIndex(&game->ball, "./data/bullet.obj", "./data/bullet.bmp");
+ 
+    int AbsNumber = Abs(-5565);
+
+    char buffer[100];
+    sprintf(buffer,"Abs: %d\n", AbsNumber);
+    OutputDebugString(buffer);
+
 }
 
 void GameUnpdateAndRender(MainGame* game, float deltaTime)
@@ -37,7 +44,6 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
     SetShaderMatrix(game->camera.viewMat, game->main_shader.viewMatLoc);
     UseShader(&game->mesh_shader);
     SetShaderMatrix(game->camera.viewMat, game->mesh_shader.viewMatLoc);
-
     // Render...
     DrawLine(&game->xAxis, get_identity_matrix());
     DrawLine(&game->yAxis, get_identity_matrix());

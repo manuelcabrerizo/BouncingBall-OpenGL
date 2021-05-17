@@ -5,6 +5,15 @@
 #include <string.h>
 #include "utility.h"
 
+
+int TestAABBAABB(AABB a, AABB b)
+{
+    if(absf(a.c.x - b.c.x) > (a.r[0] + b.r[0])) return 0;
+    if(absf(a.c.y - b.c.y) > (a.r[1] + b.r[1])) return 0;
+    if(absf(a.c.z - b.c.z) > (a.r[2] + b.r[2])) return 0;
+    return 1;
+}
+
 char* ReadFile(const char* file_path)
 {
     FILE* file;

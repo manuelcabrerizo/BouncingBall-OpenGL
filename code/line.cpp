@@ -148,12 +148,6 @@ float LineIntersectsAt(Line* l1, Line* l2)
     Vec3 u = l1->b - l1->a;
     Vec3 v = l2->b - l2->a;
     
-    // later make a struct that have the t value and al bool flag...
-    //if(vec3_dot(PerpZVec3(v), u) == 0)
-    //{
-    //    return 0.0f;
-    //}
-
     float t = vec3_dot(PerpZVec3(v), c) / vec3_dot(PerpZVec3(v), u);
     return t;
 }
@@ -170,6 +164,7 @@ Vec3 Reflect(Line* line, Vec3 normal)
     Vec3 norm = normaliza_vec3(normal);
     Vec3 vnorm = normaliza_vec3(line->b - line->a);
     float d = vec3_dot(norm, vnorm);
+    if(d == 0) return (line->b - line->a);
     float vn2  = d * 2;
     Vec3 r = vnorm - norm * vn2;
     return r;

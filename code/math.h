@@ -20,6 +20,7 @@ struct Matrix
 
 float to_radiant(float v);
 float absf(float f);
+int Abs(int number);
 
 Vec3 operator+(const Vec3& a, const Vec3& b);
 Vec3 operator-(const Vec3& a, const Vec3& b);
