@@ -6,12 +6,23 @@
 #include "input.h"
 #include "camera.h"
 #include "line.h"
+#include "collition.h"
 
 #define global_variable static
 #define WNDWIDTH 800
 #define WNDHEIGHT 600
 #define LEFTBUTTON 0
 #define RIGHTBUTTON 1
+
+struct Projectile
+{
+    Vec3 position;
+    Vec3 start;
+    Vec3 end;
+    float speed;
+    float distance;
+    Mesh mesh; 
+};
 
 struct MainGame
 {
@@ -28,6 +39,7 @@ struct MainGame
     Line ballDirection;
     Line intersectionLine;
     Vec3 ballTrans;
+    Projectile projectile;
 };
 
 void GameInit(MainGame* game);

@@ -7,7 +7,6 @@
 // my stuff...
 #include "game.h"
 
-
 global_variable bool is_runnig;
 global_variable bool should_update_mouse_pos;
 global_variable int xOffset;

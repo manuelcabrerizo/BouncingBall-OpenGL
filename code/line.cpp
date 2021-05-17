@@ -146,8 +146,7 @@ float LineIntersectsAt(Line* l1, Line* l2)
 {
     Vec3 c = l2->a - l1->a;
     Vec3 u = l1->b - l1->a;
-    Vec3 v = l2->b - l2->a;
-    
+    Vec3 v = l2->b - l2->a; 
     float t = vec3_dot(PerpZVec3(v), c) / vec3_dot(PerpZVec3(v), u);
     return t;
 }
@@ -165,6 +164,24 @@ Vec3 Reflect(Line* line, Vec3 normal)
     Vec3 vnorm = normaliza_vec3(line->b - line->a);
     float d = vec3_dot(norm, vnorm);
     if(d == 0) return (line->b - line->a);
+    float vn2  = d * 2;
+    Vec3 r = vnorm - norm * vn2;
+    return r;
+}
+
+float Vec3PlaneIntersectsAt(Vec3 a, Vec3 b, Plane* plane)
+{
+    Vec3 n = vec3_cross(plane->u, plane->v);
+    float t = vec3_dot(n, (plane->a - a)) / vec3_dot(n, (b - a));
+    return t; 
+}
+
+Vec3 Vec3Reflect(Vec3 a, Vec3 b, Vec3 normal)
+{
+    Vec3 norm = normaliza_vec3(normal);
+    Vec3 vnorm = normaliza_vec3(b - a);
+    float d = vec3_dot(norm, vnorm);
+    if(d == 0) return (b - a);
     float vn2  = d * 2;
     Vec3 r = vnorm - norm * vn2;
     return r;

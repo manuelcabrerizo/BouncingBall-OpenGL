@@ -72,19 +72,6 @@ struct Terrain
     uint32_t texId;
 };
 
-
-// Collision Detection TEST...
-
-
-
-struct AABB
-{
-    Vec3 c;       // center point of AABB
-    float r[3];   // radius or halfwidth extends (rx, ry, rz)
-};
-
-
-int TestAABBAABB(AABB a, AABB b);
 char* ReadFile(const char* file_path);
 Texture LoadBMP(const char* filename);
 void LoadOBJFileIndex(Mesh* mesh, const char* filePhat, const char* texFileName);

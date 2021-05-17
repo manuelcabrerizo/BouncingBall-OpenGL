@@ -34,4 +34,7 @@ float LineIntersectsAt(Line* l1, Line* l2);
 float LinePlaneIntersectsAt(Line* line, Plane* plane);
 Vec3 Reflect(Line* line, Vec3 normal);
 
+float Vec3PlaneIntersectsAt(Vec3 a, Vec3 b, Plane* plane);
+Vec3 Vec3Reflect(Vec3 a, Vec3 b, Vec3 normal);
+
 #endif
