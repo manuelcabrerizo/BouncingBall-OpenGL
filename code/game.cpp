@@ -53,23 +53,26 @@ Matrix UpdateProjectile(Projectile* projectile, Plane* plane, float deltaTime)
     Matrix model = get_identity_matrix();
     float planeIntersection = Vec3PlaneIntersectsAt(projectile->start, projectile->end, plane);
 
-    if(planeIntersection >= 0.0f && planeIntersection <= 1.0f)
+    if(projectile->distance <= 1.0f)
     {
-        if(projectile->distance <= planeIntersection)
+        if(planeIntersection >= 0.0f && planeIntersection <= 1.0f)
         {
-            projectile->position = Lerp(projectile->start, projectile->end, projectile->distance); 
-        } 
+            if(projectile->distance <= planeIntersection)
+            {
+                projectile->position = Lerp(projectile->start, projectile->end, projectile->distance); 
+            } 
+            else
+            {
+                Vec3 newTraget = normaliza_vec3(Vec3Reflect(projectile->start,
+                                                projectile->end,
+                                                vec3_cross(plane->u, plane->v)));
+                ShootProjectile(projectile, projectile->position, projectile->position + (newTraget * 10));
+            }
+        }
         else
         {
-            Vec3 newTraget = normaliza_vec3(Vec3Reflect(projectile->start,
-                                         projectile->end,
-                                         vec3_cross(plane->u, plane->v)));
-            ShootProjectile(projectile, projectile->position, projectile->position + (newTraget * 10));
+            projectile->position = Lerp(projectile->start, projectile->end, projectile->distance); 
         }
-    }
-    else
-    {
-        projectile->position = Lerp(projectile->start, projectile->end, projectile->distance); 
     }
 
     model = get_translation_matrix(projectile->position);
