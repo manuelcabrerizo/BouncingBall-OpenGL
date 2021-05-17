@@ -27,7 +27,8 @@ void GameInit(MainGame* game)
     game->intersectionLine = GenLine({-4.0f, 2.0f,-8.0f}, { 4.0f, 2.0f, 8.0f}, { 1.0f, 0.7f, 0.3f}, &game->main_shader);
     GenerateTerrain(&game->terrain, -10, -10, 20, 20, 1, "./data/terrain.bmp");
     LoadOBJFileIndex(&game->ball, "./data/bullet.obj", "./data/bullet.bmp");
-
+    
+    game->projectile.start = {0.0f, 0.0f, 0.0f};
     game->projectile.position         = {0.0f, 1.0f, 0.0f};
     game->projectile.end           = {1.0f, 1.0f, 0.0f};
     game->projectile.speed            = 1.0f;
@@ -39,25 +40,38 @@ void ShootProjectile(Projectile* projectile, Vec3 start, Vec3 end)
     projectile->start = start;
     projectile->end   = end;
     projectile->distance = 0.0f;
+
+    char buffer[100];
+    sprintf(buffer, "start: x: %f, y: %f, z: %f\n", projectile->start.x, projectile->start.y, projectile->start.z);
+    OutputDebugString(buffer);
+    sprintf(buffer, "end: x: %f, y: %f, z: %f\n", projectile->end.x, projectile->end.y, projectile->end.z);
+    OutputDebugString(buffer);
 }
 
 Matrix UpdateProjectile(Projectile* projectile, Plane* plane, float deltaTime)
 {
     Matrix model = get_identity_matrix();
     float planeIntersection = Vec3PlaneIntersectsAt(projectile->start, projectile->end, plane);
+
     if(planeIntersection >= 0.0f && planeIntersection <= 1.0f)
     {
         if(projectile->distance <= planeIntersection)
         {
-            projectile->position = Lerp(projectile->start, projectile->end, projectile->distance);
+            projectile->position = Lerp(projectile->start, projectile->end, projectile->distance); 
         } 
         else
         {
-            projectile->position += Vec3Reflect(projectile->start,
-                                                projectile->end,
-                                                vec3_cross(plane->u, plane->v)) * 5 * deltaTime;
+            Vec3 newTraget = normaliza_vec3(Vec3Reflect(projectile->start,
+                                         projectile->end,
+                                         vec3_cross(plane->u, plane->v)));
+            ShootProjectile(projectile, projectile->position, projectile->position + (newTraget * 10));
         }
     }
+    else
+    {
+        projectile->position = Lerp(projectile->start, projectile->end, projectile->distance); 
+    }
+
     model = get_translation_matrix(projectile->position);
     projectile->distance += projectile->speed * deltaTime;
     return model;
