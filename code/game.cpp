@@ -35,21 +35,24 @@ void GameInit(MainGame* game)
     GenerateTerrain(&game->terrain, -10, -10, 20, 20, 1, "./data/terrain.bmp");
     LoadOBJFileIndex(&game->ball, "./data/bullet.obj", "./data/bullet.bmp");
     
-    game->projectile.start    = {0.0f, 0.0f, 0.0f};
-    game->projectile.position = {0.0f, 0.0f, 0.0f};
-    game->projectile.end      = {0.0f, 0.0f, 0.0f};
-    game->projectile.speed    = 1.0f;
-    LoadOBJFileIndex(&game->projectile.mesh, "./data/bullet.obj", "./data/bullet.bmp");
+    for(int i = 0; i < 200; i++)
+    {
+        game->projectile[i].start    = {0.0f, 0.0f, 0.0f};
+        game->projectile[i].position = {0.0f, 0.0f, 0.0f};
+        game->projectile[i].end      = {0.0f, 0.0f, 0.0f};
+        game->projectile[i].speed    = 0.3f;
+    }
+
 }
 
-void ShootProjectile(Projectile* projectile, Plane plane[], Vec3 start, Vec3 end)
+void ShootProjectile(Projectile* projectile, Plane plane[], int numberPlanes, Vec3 start, Vec3 end)
 {
     projectile->start = start;
     projectile->end   = end;
     projectile->distance = 0.0f;
 
     float intersections[6];
-    for(int i = 0; i < 6; i++)         
+    for(int i = 0; i < numberPlanes; i++)         
     {
         intersections[i] = Vec3PlaneIntersectsAt(projectile->start, projectile->end, &plane[i]);
         if(intersections[i] < 0)
@@ -57,8 +60,8 @@ void ShootProjectile(Projectile* projectile, Plane plane[], Vec3 start, Vec3 end
             intersections[i] = 100000;
         }
     }
-    
-    for(int i = 0; i < 6; i++)
+   
+    for(int i = 0; i < numberPlanes; i++)
     {
         if(i == 0)
         {
@@ -74,10 +77,9 @@ void ShootProjectile(Projectile* projectile, Plane plane[], Vec3 start, Vec3 end
             }
         }   
     }
-
 }
 
-Matrix UpdateProjectile(Projectile* projectile, Plane plane[], int numberOfPlanes, float deltaTime)
+Matrix UpdateProjectile(Projectile* projectile, Plane plane[], int numberPlanes, float deltaTime)
 {
     Matrix model = get_identity_matrix();
     if(projectile->distance <= 1.0f)
@@ -93,7 +95,7 @@ Matrix UpdateProjectile(Projectile* projectile, Plane plane[], int numberOfPlane
                 Vec3 newTraget = normaliza_vec3(Vec3Reflect(projectile->start,
                                                 projectile->end,
                                                 vec3_cross(plane[projectile->index].u, plane[projectile->index].v)));
-                ShootProjectile(projectile, plane, projectile->position, projectile->position + (newTraget * 10));
+                ShootProjectile(projectile, plane, numberPlanes, projectile->position, projectile->position + (newTraget * 10));
             }
         }
         else
@@ -182,20 +184,27 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
 
 
     // START::PROCCESING::OUR::PROJECTILE::STUFF...
-    Matrix projectileModel = get_scale_matrix({0.1f, 0.1f, 0.1f}) * UpdateProjectile(&game->projectile, game->planes, 6, deltaTime);
-    static bool mouseLButtonPress = false; 
+    static bool mouseLButtonPress = false;
+    static int actualProjectile   = 0;
+
     if(GetMouseButtonPress(&game->input, LEFTBUTTON) && mouseLButtonPress == false)
     {
-        ShootProjectile(&game->projectile, game->planes, game->camera.position, game->camera.position + (game->camera.target * 10.0f));
+        ShootProjectile(&game->projectile[actualProjectile], game->planes, 6, game->camera.position, game->camera.position + (game->camera.target * 10.0f));
         mouseLButtonPress = true;
+        actualProjectile++;
     }
     if(!GetMouseButtonPress(&game->input, LEFTBUTTON) && mouseLButtonPress == true)
     {
         mouseLButtonPress = false;
     }
-    if(game->projectile.distance <= 1.0f)
+    actualProjectile %= 200;
+    for(int i = 0 ; i < 200; i++)
     {
-        SetShaderMatrix(projectileModel, game->mesh_shader.worldMatLoc);
-        glDrawElements(GL_TRIANGLES, game->ball.numIndex * 3, GL_UNSIGNED_INT, 0);
+        Matrix projectileModel = get_scale_matrix({0.1f, 0.1f, 0.1f}) * UpdateProjectile(&game->projectile[i], game->planes, 6, deltaTime);
+        if(game->projectile[i].distance <= 1.0f)
+        {
+            SetShaderMatrix(projectileModel, game->mesh_shader.worldMatLoc);
+            glDrawElements(GL_TRIANGLES, game->ball.numIndex * 3, GL_UNSIGNED_INT, 0);
+        }
     }
 }

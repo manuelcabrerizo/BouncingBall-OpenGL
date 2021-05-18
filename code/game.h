@@ -23,7 +23,6 @@ struct Projectile
     float distance;
     float planeIntersection;
     int index;
-    Mesh mesh; 
 };
 
 struct MainGame
@@ -41,7 +40,7 @@ struct MainGame
     Line ballDirection;
     Line intersectionLine;
     Vec3 ballTrans;
-    Projectile projectile;
+    Projectile projectile[200];
 };
 
 void GameInit(MainGame* game);
