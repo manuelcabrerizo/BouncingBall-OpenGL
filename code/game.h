@@ -23,6 +23,7 @@ struct Projectile
     float distance;
     float planeIntersection;
     int index;
+    float angle;
 };
 
 struct MainGame

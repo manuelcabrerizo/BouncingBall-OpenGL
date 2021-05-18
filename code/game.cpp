@@ -33,7 +33,7 @@ void GameInit(MainGame* game)
     game->ballDirection = GenLine({-2.0f, 2.0f, 4.0f}, {5.0f, 8.0f, -4.0f}, {1.0f, 0.0f, 1.0f}, &game->main_shader);
     game->intersectionLine = GenLine({-4.0f, 2.0f,-8.0f}, { 4.0f, 2.0f, 8.0f}, { 1.0f, 0.7f, 0.3f}, &game->main_shader);
     GenerateTerrain(&game->terrain, -10, -10, 20, 20, 1, "./data/terrain.bmp");
-    LoadOBJFileIndex(&game->ball, "./data/bullet.obj", "./data/bullet.bmp");
+    LoadOBJFileIndex(&game->ball, "./data/tree.obj", "./data/tree.bmp");
     
     for(int i = 0; i < 200; i++)
     {
@@ -41,6 +41,7 @@ void GameInit(MainGame* game)
         game->projectile[i].position = {0.0f, 0.0f, 0.0f};
         game->projectile[i].end      = {0.0f, 0.0f, 0.0f};
         game->projectile[i].speed    = 0.3f;
+        game->projectile[i].angle    = 0.0f;
     }
 
 }
@@ -186,7 +187,6 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
     // START::PROCCESING::OUR::PROJECTILE::STUFF...
     static bool mouseLButtonPress = false;
     static int actualProjectile   = 0;
-
     if(GetMouseButtonPress(&game->input, LEFTBUTTON) && mouseLButtonPress == false)
     {
         ShootProjectile(&game->projectile[actualProjectile], game->planes, 6, game->camera.position, game->camera.position + (game->camera.target * 10.0f));
@@ -200,7 +200,8 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
     actualProjectile %= 200;
     for(int i = 0 ; i < 200; i++)
     {
-        Matrix projectileModel = get_scale_matrix({0.1f, 0.1f, 0.1f}) * UpdateProjectile(&game->projectile[i], game->planes, 6, deltaTime);
+        game->projectile[i].angle += 10.0f * deltaTime;
+        Matrix projectileModel = get_scale_matrix({0.1f, 0.1f, 0.1f}) * get_rotation_y_matrix(game->projectile[i].angle) * UpdateProjectile(&game->projectile[i], game->planes, 6, deltaTime);
         if(game->projectile[i].distance <= 1.0f)
         {
             SetShaderMatrix(projectileModel, game->mesh_shader.worldMatLoc);
