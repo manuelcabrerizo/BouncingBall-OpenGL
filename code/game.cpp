@@ -13,19 +13,17 @@ void GameInit(MainGame* game)
     LoadShader(&game->mesh_shader,
             "./code/sphereVertexShader.vert",
             "./code/sphereFragmentShader.frag");
-    LoadShader(&game->ui_shader,
+    LoadShader(&game->ui.shader,
             "./code/uiVertexShader.vert",
             "./code/uiFragmentShader.frag");
     // Create Boths of our PROJECTION MATRIX...
     Matrix proj = get_projection_perspective_matrix(to_radiant(90), WNDWIDTH/WNDHEIGHT, 0.1f, 100.0f);
     Matrix UI_othogona_proj = get_projection_orthogonal_matrix(WNDWIDTH, WNDHEIGHT, 0.1f, 100.0f); 
 
-    UseShader(&game->ui_shader);
-    SetShaderMatrix(UI_othogona_proj, game->ui_shader.projMatLoc);
-
-    game->ui.xAxis = GenLine({-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, &game->ui_shader);
-    game->ui.yAxis = GenLine({0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, &game->ui_shader);
-    
+    UseShader(&game->ui.shader);
+    SetShaderMatrix(UI_othogona_proj, game->ui.shader.projMatLoc);
+    game->ui.xAxis = GenLine({-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, &game->ui.shader);
+    game->ui.yAxis = GenLine({0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, &game->ui.shader);
     UseShader(&game->main_shader);
     SetShaderMatrix(proj, game->main_shader.projMatLoc);
     UseShader(&game->mesh_shader);
@@ -42,12 +40,9 @@ void GameInit(MainGame* game)
     game->planes[3] = GenPlane({0.0f, 6.0f, 0.0f}, {4.0f, 6.0f, 0.0f}, {0.0f, 6.0f, 4.0f}, {0.0f, 0.0f, 1.0f}, &game->main_shader);
     game->planes[4] = GenPlane({0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 4.0f}, {0.0f, 6.0f, 0.0f}, {0.0f, 1.0f, 1.0f}, &game->main_shader);
     game->planes[5] = GenPlane({4.0f, 1.0f, 0.0f}, {4.0f, 1.0f, 4.0f}, {4.0f, 6.0f, 0.0f}, {0.3f, 0.5f, 1.0f}, &game->main_shader);
-
-    game->ballDirection = GenLine({-2.0f, 2.0f, 4.0f}, {5.0f, 8.0f, -4.0f}, {1.0f, 0.0f, 1.0f}, &game->main_shader);
-    game->intersectionLine = GenLine({-4.0f, 2.0f,-8.0f}, { 4.0f, 2.0f, 8.0f}, { 1.0f, 0.7f, 0.3f}, &game->main_shader);
+ 
     GenerateTerrain(&game->terrain, -10, -10, 20, 20, 1, "./data/terrain.bmp");
-    LoadOBJFileIndex(&game->ball, "./data/bullet.obj", "./data/bullet.bmp");
-    
+    LoadOBJFileIndex(&game->ball, "./data/bullet.obj", "./data/bullet.bmp"); 
     for(int i = 0; i < 200; i++)
     {
         game->projectile[i].start    = {0.0f, 0.0f, 0.0f};
@@ -116,12 +111,10 @@ Matrix UpdateProjectile(Projectile* projectile, Plane plane[], int numberPlanes,
         {
             projectile->position = Lerp(projectile->start, projectile->end, projectile->distance); 
         }
-    }
-    
+    } 
     model = get_translation_matrix(projectile->position);
     projectile->distance += projectile->speed * deltaTime;
     return model;
-    
 }
 
 void GameUnpdateAndRender(MainGame* game, float deltaTime)
@@ -142,15 +135,13 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
     DrawLine(&game->xAxis, get_identity_matrix());
     DrawLine(&game->yAxis, get_identity_matrix());
     DrawLine(&game->zAxis, get_identity_matrix());
-    DrawLine(&game->ballDirection, get_identity_matrix());
-    DrawLine(&game->intersectionLine, get_identity_matrix());
+    
     DrawPlane(&game->planes[0], get_translation_matrix(game->planes[0].a));
     DrawPlane(&game->planes[1], get_translation_matrix(game->planes[1].a));
     DrawPlane(&game->planes[2], get_translation_matrix(game->planes[2].a)); 
     DrawPlane(&game->planes[3], get_translation_matrix(game->planes[3].a));
     DrawPlane(&game->planes[4], get_translation_matrix(game->planes[4].a)); 
     DrawPlane(&game->planes[5], get_translation_matrix(game->planes[5].a));
-
 
     UseShader(&game->mesh_shader);
     glBindTexture(GL_TEXTURE_2D, game->terrain.texId);
@@ -162,47 +153,6 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
     glBindTexture(GL_TEXTURE_2D, game->ball.texId);
     glBindVertexArray(game->ball.vao);
     
-    float planeIntersection = LinePlaneIntersectsAt(&game->ballDirection, &game->planes[0]);
-    static float ballPosition = 0.0f; 
-    if(planeIntersection >= 0.0f && planeIntersection <= 1.0f)
-    {
-        if(ballPosition <= planeIntersection)
-        {
-            game->ballTrans = Lerp(game->ballDirection.a, game->ballDirection.b, ballPosition);
-        }
-        else
-        {
-            game->ballTrans += Reflect(&game->ballDirection, vec3_cross(game->planes[0].u, game->planes[0].v)) * deltaTime; 
-        }
-        model = get_scale_matrix({0.1f, 0.1f, 0.1f}) * get_translation_matrix(game->ballTrans);
-        SetShaderMatrix(model, game->mesh_shader.worldMatLoc);
-        glDrawElements(GL_TRIANGLES, game->ball.numIndex * 3, GL_UNSIGNED_INT, 0);
-    }
-    ballPosition += 0.1f * deltaTime;
-
-    float planeIntersection2 = LinePlaneIntersectsAt(&game->intersectionLine, &game->planes[0]);
-    if(planeIntersection2 >= 0.0f && planeIntersection2 <= 1.0f)
-    {
-        model = get_scale_matrix({0.1f, 0.1f, 0.1f}) *
-                get_translation_matrix(Lerp(game->intersectionLine.a, game->intersectionLine.b,
-                planeIntersection2));
-        SetShaderMatrix(model, game->mesh_shader.worldMatLoc);
-        glDrawElements(GL_TRIANGLES, game->ball.numIndex * 3, GL_UNSIGNED_INT, 0); 
-    }
-
-    float intersectionT = LineIntersectsAt(&game->ballDirection, &game->intersectionLine);
-    float intersectionS = LineIntersectsAt(&game->intersectionLine, &game->ballDirection);
-    if(intersectionT >= 0.0f && intersectionT <= 1.0f && intersectionS >= 0.0f && intersectionS <= 1.0f)
-    {
-        model = get_scale_matrix({0.1f, 0.1f, 0.1f}) *
-                get_translation_matrix(Lerp(game->ballDirection.a, game->ballDirection.b,
-                intersectionT));
-        SetShaderMatrix(model, game->mesh_shader.worldMatLoc);
-        glDrawElements(GL_TRIANGLES, game->ball.numIndex * 3, GL_UNSIGNED_INT, 0);
-    }
-
-
-
     // START::PROCCESING::OUR::PROJECTILE::STUFF...
     static bool mouseLButtonPress = false;
     static int actualProjectile   = 0;
@@ -227,4 +177,6 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
             glDrawElements(GL_TRIANGLES, game->ball.numIndex * 3, GL_UNSIGNED_INT, 0);
         }
     }
+
+
 }

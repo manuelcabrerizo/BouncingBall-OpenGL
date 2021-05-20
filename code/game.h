@@ -30,13 +30,13 @@ struct UI
 {
     Line xAxis;
     Line yAxis;
+    Shader shader;
 };
 
 struct MainGame
 {
     Shader main_shader;
-    Shader mesh_shader;
-    Shader ui_shader;
+    Shader mesh_shader; 
     UI ui; 
     Input input;
     Camera camera;
@@ -46,9 +46,6 @@ struct MainGame
     Line zAxis;
     Plane planes[6];
     Mesh ball;
-    Line ballDirection;
-    Line intersectionLine;
-    Vec3 ballTrans;
     Projectile projectile[200];
 };
 
