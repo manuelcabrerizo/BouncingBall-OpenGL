@@ -12,8 +12,20 @@ void GameInit(MainGame* game)
             "./code/fragmentShader.frag");
     LoadShader(&game->mesh_shader,
             "./code/sphereVertexShader.vert",
-            "./code/sphereFragmentShader.frag"); 
-    Matrix proj = get_projection_perspective_matrix(to_radiant(90), WNDWIDTH/WNDHEIGHT, 0.1f, 100.0f); 
+            "./code/sphereFragmentShader.frag");
+    LoadShader(&game->ui_shader,
+            "./code/uiVertexShader.vert",
+            "./code/uiFragmentShader.frag");
+    // Create Boths of our PROJECTION MATRIX...
+    Matrix proj = get_projection_perspective_matrix(to_radiant(90), WNDWIDTH/WNDHEIGHT, 0.1f, 100.0f);
+    Matrix UI_othogona_proj = get_projection_orthogonal_matrix(WNDWIDTH, WNDHEIGHT, 0.1f, 100.0f); 
+
+    UseShader(&game->ui_shader);
+    SetShaderMatrix(UI_othogona_proj, game->ui_shader.projMatLoc);
+
+    game->ui.xAxis = GenLine({-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, &game->ui_shader);
+    game->ui.yAxis = GenLine({0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, &game->ui_shader);
+    
     UseShader(&game->main_shader);
     SetShaderMatrix(proj, game->main_shader.projMatLoc);
     UseShader(&game->mesh_shader);
@@ -22,6 +34,7 @@ void GameInit(MainGame* game)
     game->xAxis = GenLine({-100.0f, 0.0f, 0.0f}, {100.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, &game->main_shader);  
     game->yAxis = GenLine({0.0f, -100.0f, 0.0f}, {0.0f, 100.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, &game->main_shader);
     game->zAxis = GenLine({0.0f, 0.0f, -100.0f}, {0.0f, 0.0f, 100.0f}, {0.0f, 0.0f, 1.0f}, &game->main_shader);
+    
     // Generate the two planes...
     game->planes[0] = GenPlane({0.0f, 1.0f, 0.0f}, {4.0f, 1.0f, 0.0f}, {0.0f, 6.0f, 0.0f}, {1.0f, 1.0f, 0.0f}, &game->main_shader);
     game->planes[1] = GenPlane({0.0f, 1.0f, 4.0f}, {4.0f, 1.0f, 4.0f}, {0.0f, 6.0f, 4.0f}, {0.0f, 1.0f, 0.0f}, &game->main_shader);
@@ -33,14 +46,14 @@ void GameInit(MainGame* game)
     game->ballDirection = GenLine({-2.0f, 2.0f, 4.0f}, {5.0f, 8.0f, -4.0f}, {1.0f, 0.0f, 1.0f}, &game->main_shader);
     game->intersectionLine = GenLine({-4.0f, 2.0f,-8.0f}, { 4.0f, 2.0f, 8.0f}, { 1.0f, 0.7f, 0.3f}, &game->main_shader);
     GenerateTerrain(&game->terrain, -10, -10, 20, 20, 1, "./data/terrain.bmp");
-    LoadOBJFileIndex(&game->ball, "./data/tree.obj", "./data/tree.bmp");
+    LoadOBJFileIndex(&game->ball, "./data/bullet.obj", "./data/bullet.bmp");
     
     for(int i = 0; i < 200; i++)
     {
         game->projectile[i].start    = {0.0f, 0.0f, 0.0f};
         game->projectile[i].position = {0.0f, 0.0f, 0.0f};
         game->projectile[i].end      = {0.0f, 0.0f, 0.0f};
-        game->projectile[i].speed    = 0.3f;
+        game->projectile[i].speed    = 0.7f;
         game->projectile[i].angle    = 0.0f;
     }
 
@@ -119,7 +132,13 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
     SetShaderMatrix(game->camera.viewMat, game->main_shader.viewMatLoc);
     UseShader(&game->mesh_shader);
     SetShaderMatrix(game->camera.viewMat, game->mesh_shader.viewMatLoc);
-    // Render...
+    // Render...   
+    // UI STAFF...
+    float xPos = (float)WNDWIDTH  / 2.0f;
+    float yPos = (float)WNDHEIGHT / 2.0f;
+    DrawLine(&game->ui.xAxis, get_scale_matrix({30.0f, 0.0f, 0.0f}) * get_translation_matrix({xPos, yPos, 0.0f})); 
+    DrawLine(&game->ui.yAxis, get_scale_matrix({0.0f, 30.0f, 0.0f}) * get_translation_matrix({xPos, yPos, 0.0f}));
+    // GAME 3D STUFF...
     DrawLine(&game->xAxis, get_identity_matrix());
     DrawLine(&game->yAxis, get_identity_matrix());
     DrawLine(&game->zAxis, get_identity_matrix());
@@ -201,7 +220,7 @@ void GameUnpdateAndRender(MainGame* game, float deltaTime)
     for(int i = 0 ; i < 200; i++)
     {
         game->projectile[i].angle += 10.0f * deltaTime;
-        Matrix projectileModel = get_scale_matrix({0.1f, 0.1f, 0.1f}) * get_rotation_y_matrix(game->projectile[i].angle) * UpdateProjectile(&game->projectile[i], game->planes, 6, deltaTime);
+        Matrix projectileModel = get_scale_matrix({0.1f, 0.1f, 0.1f}) * UpdateProjectile(&game->projectile[i], game->planes, 6, deltaTime);
         if(game->projectile[i].distance <= 1.0f)
         {
             SetShaderMatrix(projectileModel, game->mesh_shader.worldMatLoc);

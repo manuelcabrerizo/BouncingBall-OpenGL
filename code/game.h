@@ -26,10 +26,18 @@ struct Projectile
     float angle;
 };
 
+struct UI
+{
+    Line xAxis;
+    Line yAxis;
+};
+
 struct MainGame
 {
     Shader main_shader;
-    Shader mesh_shader; 
+    Shader mesh_shader;
+    Shader ui_shader;
+    UI ui; 
     Input input;
     Camera camera;
     Terrain terrain;

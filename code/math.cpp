@@ -202,6 +202,25 @@ Matrix get_projection_perspective_matrix(float fov, float aspect, float znear, f
     return result;
 }
 
+Matrix get_projection_orthogonal_matrix(int width, int height, float znear, float zfar)
+{
+    float w = (float)width;
+    float h = (float)height;
+    float l = 0;
+    float r = w;
+    float b = 0;
+    float t = h;
+
+    Matrix result = {{
+        {2.0f / (r - l),    0.0f,              0.0f,                   0.0f},
+        {0.0f,              2.0f / (t - b),    0.0f,                   0.0f},
+        {0.0f,              0.0f,              1.0f / (zfar - znear),  0.0f},
+        {(l + r) / (l - r), (t + b) / (b - t), znear / (znear - zfar), 1.0f}
+    }};
+
+    return result;
+}
+
 Matrix get_identity_matrix()
 {
     Matrix result = {{

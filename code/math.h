@@ -40,6 +40,7 @@ Matrix operator-(const Matrix& a, const Matrix& b);
 Matrix operator*(const Matrix& a, const Matrix& b);
 Matrix get_view_matrix(Vec3 eye, Vec3 target, Vec3 up);
 Matrix get_projection_perspective_matrix(float fov, float aspect, float znear, float zfar);
+Matrix get_projection_orthogonal_matrix(int width, int height, float znear, float zfar);
 Matrix get_identity_matrix();
 Matrix matrix_transpose(Matrix m);
 Matrix get_scale_matrix(Vec3 v);
